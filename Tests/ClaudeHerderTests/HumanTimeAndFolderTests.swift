@@ -91,7 +91,7 @@ final class FolderStateTests: XCTestCase {
 final class DeduplicationTests: XCTestCase {
     private func session(_ id: String, cwd: String, lastAt: TimeInterval) -> Session {
         Session(
-            id: id, cwd: cwd, title: id, recap: nil, firstPrompt: nil,
+            id: id, cwd: cwd, gitBranch: nil, title: id, recap: nil, firstPrompt: nil,
             firstAt: Date(timeIntervalSince1970: 0), lastAt: Date(timeIntervalSince1970: lastAt),
             messageCount: 1, costUSD: nil)
     }

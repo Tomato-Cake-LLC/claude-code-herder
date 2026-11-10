@@ -27,7 +27,7 @@ final class SessionParserTests: XCTestCase {
     func testSummarizesTranscript() throws {
         let transcript = try write("abc.jsonl", [
             #"{"type":"user","isMeta":true,"timestamp":"2026-10-01T09:00:00.000Z","message":{"role":"user","content":"Caveat"}}"#,
-            #"{"type":"user","cwd":"/work/proj","timestamp":"2026-10-01T10:00:00.000Z","message":{"role":"user","content":"Fix the bug"}}"#,
+            #"{"type":"user","cwd":"/work/proj","gitBranch":"tommo/x","timestamp":"2026-10-01T10:00:00.000Z","message":{"role":"user","content":"Fix the bug"}}"#,
             // Two streamed blocks of one reply: counted once, usage once.
             #"{"type":"assistant","timestamp":"2026-10-01T10:00:05.000Z","message":{"id":"m1","model":"claude-opus-5-5","content":[{"type":"text","text":"On it"}],"usage":\#(usage)}}"#,
             #"{"type":"assistant","timestamp":"2026-10-01T10:00:06.000Z","message":{"id":"m1","model":"claude-opus-5-5","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{}}],"usage":\#(usage)}}"#,
@@ -35,7 +35,7 @@ final class SessionParserTests: XCTestCase {
             // Tool-only reply: not a message, but billed.
             #"{"type":"assistant","timestamp":"2026-10-01T10:00:08.000Z","message":{"id":"m2","model":"claude-opus-5-5","content":[{"type":"tool_use","id":"t2","name":"Bash","input":{}}],"usage":\#(usage)}}"#,
             // Claude cd'd into a subfolder; resuming still needs the starting folder.
-            #"{"type":"user","cwd":"/work/proj/sub","timestamp":"2026-10-01T11:00:00.000Z","message":{"role":"user","content":[{"type":"text","text":"Thanks"}]}}"#,
+            #"{"type":"user","cwd":"/work/proj/sub","gitBranch":"main","timestamp":"2026-10-01T11:00:00.000Z","message":{"role":"user","content":[{"type":"text","text":"Thanks"}]}}"#,
             #"{"type":"system","subtype":"away_summary","content":"Fixed the bug. (disable recaps in /config)","timestamp":"2026-10-01T11:30:00.000Z"}"#,
             #"{"type":"ai-title","aiTitle":"Bug fixing"}"#,
             #"{"type":"custom-title","customTitle":"my-bug"}"#,
@@ -48,6 +48,7 @@ final class SessionParserTests: XCTestCase {
         let session = try XCTUnwrap(SessionParser.parse(transcript: transcript, subagents: [subagent]))
 
         XCTAssertEqual(session.id, "abc")
+        XCTAssertEqual(session.gitBranch, "tommo/x", "the branch the starting folder was on")
         XCTAssertEqual(session.cwd, "/work/proj")
         XCTAssertEqual(session.title, "my-bug")
         XCTAssertEqual(session.recap, "Fixed the bug.")

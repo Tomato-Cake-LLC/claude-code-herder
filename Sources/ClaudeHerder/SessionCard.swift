@@ -9,6 +9,9 @@ struct SessionCard: View {
     let isOpen: Bool
     let onOpen: () -> Void
     let onFork: () -> Void
+    /// Set when the deleted folder was a cow that `cow` can clone again.
+    let recreation: Recreation?
+    let onRecreate: () -> Void
     let onToggleDone: () -> Void
 
     @State private var isHovered = false
@@ -131,6 +134,16 @@ struct SessionCard: View {
                     }
                     .buttonStyle(PillButtonStyle())
                     .help(isOpen ? "Already running; jump to its tab" : "claude --resume in \(session.cwd ?? "")")
+                } else if let recreation {
+                    Button(action: onRecreate) {
+                        HStack(spacing: 4) {
+                            Text("Recreate and Open")
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .semibold))
+                        }
+                    }
+                    .buttonStyle(PillButtonStyle())
+                    .help("cow \(recreation.branch), then claude --resume")
                 } else {
                     Text("Folder deleted")
                         .font(.system(size: 13, weight: .medium))

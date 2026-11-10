@@ -79,6 +79,7 @@ private struct Accumulator {
     var firstAt: Date?
     var lastAt: Date?
     var cwd: String?
+    var gitBranch: String?
     var aiTitle: String?
     var customTitle: String?
     var recap: String?
@@ -141,6 +142,7 @@ private struct Accumulator {
         // the session from the folder it started in.
         if cwd == nil {
             cwd = entry.cwd
+            gitBranch = entry.gitBranch
         }
         guard let at = entry.timestamp else {
             return
@@ -167,6 +169,7 @@ private struct Accumulator {
         Session(
             id: id,
             cwd: cwd,
+            gitBranch: gitBranch,
             title: customTitle ?? aiTitle ?? firstPrompt ?? id,
             recap: recap,
             firstPrompt: firstPrompt,
@@ -224,6 +227,7 @@ private struct Entry: Decodable {
     let uuid: String?
     let timestamp: Date?
     let cwd: String?
+    let gitBranch: String?
     let isMeta: Bool?
     let isSidechain: Bool?
     /// String body of `system` entries such as recaps.
@@ -233,8 +237,8 @@ private struct Entry: Decodable {
     let customTitle: String?
 
     enum CodingKeys: String, CodingKey {
-        case type, subtype, uuid, timestamp, cwd, isMeta, isSidechain, content, message, aiTitle,
-            customTitle
+        case type, subtype, uuid, timestamp, cwd, gitBranch, isMeta, isSidechain, content, message,
+            aiTitle, customTitle
     }
 
     init(from decoder: Decoder) throws {
@@ -244,6 +248,7 @@ private struct Entry: Decodable {
         uuid = try c.decodeIfPresent(String.self, forKey: .uuid)
         timestamp = try c.decodeIfPresent(String.self, forKey: .timestamp).map(Self.parseDate)
         cwd = try c.decodeIfPresent(String.self, forKey: .cwd)
+        gitBranch = try c.decodeIfPresent(String.self, forKey: .gitBranch)
         isMeta = try c.decodeIfPresent(Bool.self, forKey: .isMeta)
         isSidechain = try c.decodeIfPresent(Bool.self, forKey: .isSidechain)
         // Only `system` entries have a string `content`; elsewhere it's structured or absent.

@@ -39,7 +39,7 @@ final class CowsTests: XCTestCase {
 
     private func session(_ id: String, cwd: String) -> Session {
         Session(
-            id: id, cwd: cwd, title: id, recap: nil, firstPrompt: nil,
+            id: id, cwd: cwd, gitBranch: nil, title: id, recap: nil, firstPrompt: nil,
             firstAt: .now, lastAt: .now, messageCount: 1, costUSD: nil)
     }
 

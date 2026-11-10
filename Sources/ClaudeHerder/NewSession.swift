@@ -7,6 +7,13 @@ enum Workspace: Hashable {
     case newCow
 }
 
+/// A tab to open in `directory` that types `input`: re-clone a deleted cow and resume in it.
+struct Recreation: Equatable {
+    let branch: String
+    let directory: URL
+    let input: String
+}
+
 /// Starts sessions by typing `cow` / `claude` into a new tab, so `cow.sh` stays the only
 /// implementation of making a cow.
 enum NewSession {
@@ -18,7 +25,7 @@ enum NewSession {
 
     /// Cows cloned from `repo`, which `cow` keeps in a `cows` folder beside it.
     static func cows(of repo: URL) throws -> [URL] {
-        let parent = repo.deletingLastPathComponent().appendingPathComponent("cows")
+        let parent = cowsFolder(of: repo)
         guard FileManager.default.fileExists(atPath: parent.path) else {
             return []
         }
@@ -49,7 +56,37 @@ enum NewSession {
     }
 
     static func folderName(for name: String) -> String {
-        (branchPrefix + name).replacingOccurrences(of: "/", with: "-")
+        folderName(forBranch: branchPrefix + name)
+    }
+
+    static func folderName(forBranch branch: String) -> String {
+        branch.replacingOccurrences(of: "/", with: "-")
+    }
+
+    private static func cowsFolder(of repo: URL) -> URL {
+        repo.deletingLastPathComponent().appendingPathComponent("cows")
+    }
+
+    /// How to bring back the deleted cow `session` ran in; nil unless its folder was a cow
+    /// of `repo` whose name matches the branch, i.e. what `cow <branch>` would make again.
+    static func recreation(of session: Session, repo: URL = repo) -> Recreation? {
+        guard let cwd = session.cwd, let branch = session.gitBranch, branch != "HEAD" else {
+            return nil
+        }
+        let cows = cowsFolder(of: repo).standardizedFileURL.pathComponents
+        let parts = URL(fileURLWithPath: cwd).standardizedFileURL.pathComponents
+        guard parts.count > cows.count, Array(parts.prefix(cows.count)) == cows,
+            parts[cows.count] == folderName(forBranch: branch)
+        else {
+            return nil
+        }
+        let line = "cow \(shellQuoted(branch)) && cd \(shellQuoted(cwd))"
+            + " && claude --resume \(shellQuoted(session.id))"
+        return Recreation(branch: branch, directory: repo, input: line)
+    }
+
+    static func recreate(_ recreation: Recreation) async throws {
+        try await Ghostty.newTab(in: recreation.directory.path, typing: recreation.input)
     }
 
     /// The folder the tab opens in and the line typed into it. The prompt is read from a file

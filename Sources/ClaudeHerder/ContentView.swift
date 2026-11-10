@@ -204,13 +204,18 @@ struct ContentView: View {
                         columns: [GridItem(.adaptive(minimum: 380), spacing: 18)], spacing: 18
                     ) {
                         ForEach(sessions.prefix(pageLimit)) { session in
+                            let folder = store.folderStates[session.id] ?? .missing
+                            let recreation =
+                                folder == .missing ? NewSession.recreation(of: session) : nil
                             SessionCard(
                                 session: session,
-                                folder: store.folderStates[session.id] ?? .missing,
+                                folder: folder,
                                 isDone: store.done.isDone(session),
                                 isOpen: store.openPIDs[session.id] != nil,
                                 onOpen: { open(session) },
                                 onFork: { fork(session) },
+                                recreation: recreation,
+                                onRecreate: { recreation.map(recreate) },
                                 onToggleDone: {
                                     withAnimation(.easeInOut(duration: 0.35)) {
                                         store.toggleDone(session)
@@ -389,6 +394,16 @@ struct ContentView: View {
         Task {
             do {
                 try await NewSession.start(workspace, name: name, prompt: prompt)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func recreate(_ recreation: Recreation) {
+        Task {
+            do {
+                try await NewSession.recreate(recreation)
             } catch {
                 errorMessage = error.localizedDescription
             }

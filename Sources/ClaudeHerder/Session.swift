@@ -6,6 +6,8 @@ struct Session: Codable, Identifiable, Hashable {
     let id: String
     /// Folder the session started in; `claude --resume` only finds the session from there.
     let cwd: String?
+    /// Branch checked out when it started; tells which `cow` made its folder.
+    let gitBranch: String?
     let title: String
     /// Latest recap Claude wrote when the user stepped away; nil if it never did.
     let recap: String?

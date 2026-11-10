@@ -5,7 +5,7 @@ import XCTest
 final class DoneMarksTests: XCTestCase {
     private func session(lastAt: TimeInterval) -> Session {
         Session(
-            id: "s", cwd: "/x", title: "s", recap: nil, firstPrompt: nil,
+            id: "s", cwd: "/x", gitBranch: nil, title: "s", recap: nil, firstPrompt: nil,
             firstAt: Date(timeIntervalSince1970: 0), lastAt: Date(timeIntervalSince1970: lastAt),
             messageCount: 1, costUSD: nil)
     }

@@ -32,7 +32,7 @@ enum SessionIndexer {
 
     private static let cacheURL = FileManager.default
         .urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("ClaudeHerder/index-v3.json")
+        .appendingPathComponent("ClaudeHerder/index-v4.json")
 
     static func index(root: URL = projectsRoot) -> Result {
         let transcripts: [Transcript]
